@@ -119,14 +119,7 @@ product_df_final <- product_df_final[-1,]
 # searchbox_By_XPath2 <- conDriver$findElement(using = "xpath","//*[@class='header-GlobalSearch-input']")
 # searchbox_By_XPath1$getElementAttribute("class")
 # 
-# #Searching element by name
-# searchbox_ByName <- conDriver$findElement(using = "name",value = "query")
-# #Sending a string to the search box element and hit enter
-# searchbox_ByName$sendKeysToElement(list("Eternal Energy Shot Extra Strength Grape",key="enter"))
-# #Going to the product page of the first result
-# first_product <- conDriver$findElement(using = "class", value = "truncate-title")
-# first_product$sendKeysToElement(list(key="enter"))
-# 
+#
 # #PRODUCT TITLE
 # product_title <- conDriver$findElement(using = "class", value = "prod-ProductTitle")
 # a$title <- product_title$getElementText()
@@ -145,9 +138,6 @@ product_df_final <- product_df_final[-1,]
 # #PRODUCT DESCRIPTION
 # product_description <- conDriver$findElement(using = "class", value = "about-product-description")
 # a$description <- product_description$getElementText()
-# 
-# conDriver$goBack()
-# conDriver$goBack()
 
 
 
