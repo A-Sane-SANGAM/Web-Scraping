@@ -3,6 +3,7 @@ library(rvest)
 library(httr)
 library(RSelenium)
 library(lubridate)
+library(stringr)
 
 #Requesting a connection
 binman::list_versions("chromedriver")
@@ -14,7 +15,7 @@ product_df <- read.csv("product_list.csv")
 
 #Navigating the website
 conDriver$navigate("https://www.walmart.com/")
-Sys.sleep(30)
+Sys.sleep(15)
 
 
 getProductAttributes <- function(title){
@@ -22,11 +23,10 @@ getProductAttributes <- function(title){
     #Searching for the product on the website
     searchbox_ByName <- conDriver$findElement(using = "name",value = "query")
     searchbox_ByName$sendKeysToElement(list(title,key="enter"))
-    Sys.sleep(15)
+    Sys.sleep(10)
     
     #Scraping product attributes from the results page
     search_result_text <- conDriver$findElements(using = "xpath", value = "//*[@id='searchProductResult']/ul/li | //*[@id='searchProductResult']/div/div")
-    Sys.sleep(5)
     temp1 <- list()
     i<-1
     while (i<=length(search_result_text)) {
@@ -37,7 +37,6 @@ getProductAttributes <- function(title){
     
     #Scraping the links for the corresponding products
     search_result_links <- conDriver$findElements(using = "class", value = "product-title-link")
-    Sys.sleep(5)
     temp2 <- list()
     i<-1
     while (i<=length(search_result_text)) {
@@ -59,7 +58,7 @@ getProductAttributes <- function(title){
     
     #Going back to home page
     conDriver$goBack()
-    Sys.sleep(30)
+    Sys.sleep(10)
     
     return (temp3)
 
@@ -80,6 +79,30 @@ for(k in 1:nrow(product_df)){
 product_df_final <- product_df_final[-1,]
 
 
+#Extracting Product Attributes
+temp5 <- product_df_final
+temp5$content <- gsub(pattern = "[[:space:]]+",replacement = "",x = temp5$content)
+temp5$content <- tolower(temp5$content)
+#Extracting Product Name
+temp5$Product_Name <- regmatches(temp5$content, gregexpr(pattern = "producttitle.*averagerating",text = temp5$content)) 
+temp5$Product_Name <- gsub(pattern = c("producttitle|averagerating"),replacement = "",x = temp5$Product_Name)
+#Extracting Product Price
+temp5$Price <- gsub("\\$", "CP", temp5$content)
+temp5$Price <- regmatches(temp5$Price, gregexpr(pattern = "currentpriceCP.*CP",text = temp5$Price))
+temp5$Price <- gsub('^([^CP]+CP[^CP]+).*', '\\1', temp5$Price)
+temp5$Price <- gsub(pattern = "currentpriceCP",replacement = "",x = temp5$Price)
+#Extracting Stars
+temp5$stars <- regmatches(temp5$content, gregexpr(pattern = "averagerating.*stars",text = temp5$content))
+temp5$stars <- gsub(pattern = c("averagerating:|outof5stars"),replacement = "",x = temp5$stars)
+temp5$stars <- gsub(pattern = "[()]",replacement = "",x = temp5$stars)
+temp5$stars <- as.numeric(temp5$stars)
+#Extracting Reviews
+temp5$reviews <- regmatches(temp5$content, gregexpr(pattern = "basedon.*reviews",text = temp5$content))
+temp5$reviews <- gsub(pattern = "basedon|reviews",replacement = "",x = temp5$reviews)
+temp5$reviews <- as.numeric(temp5$reviews)
+temp5$reviews[is.na(temp5$reviews)] <- 0
+
+write.csv(temp5,"WalmartProductData.csv")
 
 
 # # OTHER CODES **********************************************************************************
